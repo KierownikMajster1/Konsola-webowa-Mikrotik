@@ -1,0 +1,147 @@
+/* Resetowanie stylów */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* Stylizacja strony */
+body {
+    font-family: 'Arial', sans-serif;
+    background-color: #f4f7f6;
+    color: #333;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    padding: 20px; 
+}
+
+/* Kontener dla formularzy */
+.auth-form {
+    background-color: #fff;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 400px;
+    text-align: center;
+}
+
+/* Nagłówki */
+h2 {
+    margin-bottom: 20px;
+    color: #2d3e50;
+}
+
+/* Etykiety */
+label {
+    display: block;
+    text-align: left;
+    font-weight: bold;
+    margin-top: 10px;
+}
+
+/* Pola formularza */
+.auth-form input {
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 15px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 1em;
+}
+
+/* Stylizacja focus na inputach */
+.auth-form input:focus {
+    border-color: #5cb85c;
+    outline: none;
+    box-shadow: 0 0 5px rgba(92, 184, 92, 0.5);
+}
+
+/* Kontener dla pola hasła */
+.password-container {
+    display: flex;
+    align-items: center;
+    position: relative;
+    width: 100%;
+    margin-bottom: 15px;
+}
+
+/* Pole hasła */
+.password-container input {
+    width: 100%;
+    padding-right: 40px; /* Miejsce na ikonę */
+    border-radius: 5px;
+}
+
+/* Przycisk ikony oka */
+.password-container .toggle-password {
+    position: absolute;
+    right: 0px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1em; 
+    color: #5bc0de;
+    top: 60%; 
+    transform: translateY(-20%);
+}
+
+/* Stylizacja przycisków */
+.auth-form button {
+    background-color: #5cb85c;
+    color: white;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1em;
+    transition: background-color 0.3s ease;
+    width: 100%;
+    margin-top: 10px;
+}
+
+.auth-form button:hover {
+    background-color: #4cae4c;
+}
+
+/* Linki */
+.auth-links {
+    margin-top: 15px;
+}
+
+.auth-links a {
+    color: #0275d8;
+    text-decoration: none;
+}
+
+.auth-links a:hover {
+    text-decoration: underline;
+}
+
+/* Komunikaty błędów/sukcesów */
+.flash-messages {
+    margin-bottom: 15px;
+    padding: 10px;
+    border-radius: 5px;
+    text-align: center;
+    font-weight: bold;
+}
+
+.flash-success {
+    background-color: #5cb85c;
+    color: white;
+}
+
+.flash-error {
+    background-color: #d9534f;
+    color: white;
+}
+
+/* Responsywność */
+@media (max-width: 600px) {
+    .auth-form {
+        width: 90%;
+    }
+}

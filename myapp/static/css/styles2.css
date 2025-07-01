@@ -1,0 +1,87 @@
+/* Ciemne tło i tekst */
+body {
+    background-color: #1e1e1e;
+    color: #e0e0e0;
+}
+
+/* Nagłówek */
+h1 {
+    color: #d1d1d1;
+}
+
+/* Kontener */
+.container {
+    background-color: #252525;
+}
+
+/* Formularz */
+form {
+    background-color: #2d2d2d;
+    color: #e0e0e0;
+}
+
+input {
+    background-color: #3a3a3a;
+    color: #ffffff;
+    border: 1px solid #555;
+}
+
+input:focus {
+    border-color: #5cb85c;
+}
+
+/* Tabela */
+table {
+    background-color: #2a2a2a;
+    color: #ffffff;
+}
+
+thead {
+    background-color: #444;
+}
+
+th, td {
+    border-bottom: 1px solid #555;
+}
+
+/* Przyciski */
+button {
+    background-color: #444;
+    color: white;
+}
+
+button:hover {
+    background-color: #666;
+}
+
+/* Przycisk wylogowania */
+#logout {
+    background-color: #a94442;
+}
+
+#logout:hover {
+    background-color: #c9302c;
+}
+
+/* Akcje w tabeli */
+.table-actions button {
+    background-color: #444;
+}
+
+.table-actions button:hover {
+    background-color: #666;
+}
+
+/* Modal */
+.modal-content {
+    background-color: #2d2d2d;
+    color: #e0e0e0;
+}
+
+.close {
+    color: #ff5555;
+}
+
+.close:hover {
+    color: #ff2222;
+}

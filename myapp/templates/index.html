@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MikroTik Dashboard</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="/static/css/styles.css">
+    <link id="dark-mode-stylesheet" rel="stylesheet" href="/static/css/styles2.css" disabled>
+
+
+
+</head>
+<body>
+    <h1>MikroTik Dashboard</h1>
+    
+    <button id="open-add-modal">Dodaj MikroTik</button>
+    <button id="open-command-modal">Wykonaj polecenie</button>
+    <button id="change-password-btn">Zmień hasło</button>
+    <button id="logout">Wyloguj</button>
+
+    <!-- Modal do dodawania MikroTik -->
+    <div id="add-modal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h3>Dodaj MikroTik</h3>
+            <form id="add-mikrotik-form">
+                <input type="text" id="name" placeholder="Nazwa" required>
+                <input type="text" id="host" placeholder="IP/Host" required>
+                <input type="text" id="username" placeholder="Użytkownik" required>
+                <input type="password" id="password" placeholder="Hasło">
+                <button type="submit">Dodaj MikroTik</button>
+            </form>
+        </div>
+    </div>
+
+    
+    <hr>
+
+    <table border="1">
+        <thead>
+            <tr>
+                <th>Zaznacz</th>
+                <th>Nazwa</th>
+                <th>Adres IP</th>
+                <th>Status</th>
+                <th>Ostatnie sprawdzenie</th>
+                <th>Akcje</th>
+            </tr>
+        </thead>
+        <tbody id="mikrotik-list">
+            <!-- MikroTiki użytkownika -->
+        </tbody>
+    </table>
+
+    <!-- Modal do wpisania polecenia -->
+    <div id="command-modal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeCommandModal()">&times;</span>
+            <h3>Wykonaj polecenie</h3>
+            <input type="text" id="command-input" placeholder="Wpisz polecenie">
+            <button onclick="executeCommand()">Wykonaj</button>
+        </div>
+    </div>
+    
+    <!-- Modal do wyświetlania wyników -->
+    <div id="results-modal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeResultsModal()">&times;</span>
+            <h3>Wyniki wykonania polecenia</h3>
+            <div id="results-container"></div>
+        </div>
+    </div>
+
+    <!-- Modal zmiany hasła -->
+    <div id="change-password-modal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeChangePasswordModal()">&times;</span>
+            <h3>Zmień hasło</h3>
+            <form id="change-password-form">
+                <label for="current_password">Obecne hasło</label>
+                <input type="password" id="current_password" name="current_password" required>
+                <label for="new_password">Nowe hasło</label>
+                <input type="password" id="new_password" name="new_password" required>
+                <button type="submit">Zmień</button>
+            </form>
+            <div id="change-password-msg"></div>
+        </div>
+    </div>    
+
+    <script>
+        function loadMikrotiks() {
+            let selectedMikrotiks = $(".mikrotik-checkbox:checked").map(function() {
+                return $(this).val();
+            }).get();
+            $.get("/status", function(data) {
+                const mikrotiks = data.mikrotiks;
+                $("#mikrotik-list").html("");
+
+                for (const id in mikrotiks) {
+                    const mikrotik = mikrotiks[id];
+                    const status = mikrotik.online ? "Online 🟢" : "Offline 🔴";
+                    // ${!mikrotik.online ? "disabled" : } --> open winbox linia po host
+                    const row = `
+                        <tr>
+                            <td>
+                            <input type="checkbox" class="mikrotik-checkbox" value="${id}" ${selectedMikrotiks.includes(id) ? "checked" : ""}>
+                            </td>
+                            <td>${mikrotik.name}</td>
+                            <td>${mikrotik.host || "-"}</td>
+                            <td>${status}</td>
+                            <td>${mikrotik.last_checked || "-"}</td>
+                            <td>
+                                <button onclick="openConsole('${mikrotik.host}')">Konsola</button>
+                                <button onclick="openWinbox('${mikrotik.host || ""}')" ${!mikrotik.online ? "disabled" : ""}>Winbox</button>
+                                <button onclick="deleteMikrotik(${id})">Usuń</button>
+                            </td>
+                        </tr>
+                    `;
+                    $("#mikrotik-list").append(row);
+                }
+            });
+        }
+
+        $("#add-mikrotik-form").submit(function(e) {
+            e.preventDefault();
+            const name = $("#name").val();
+            const host = $("#host").val();
+            const username = $("#username").val();
+            const password = $("#password").val();
+
+            $.ajax({
+                url: "/add_mikrotik",
+                type: "POST",
+                data: JSON.stringify({ name, host, username, password }),
+                contentType: "application/json",
+                dataType: "json",
+                xhrFields: {
+                withCredentials: true   
+                },
+                success: function(data) {
+                    alert(data.message);
+                    loadMikrotiks();
+                    closeModal();
+                },
+                error: function(xhr) {
+                    console.error("Błąd:", xhr);
+                    const msg = xhr.responseJSON?.message || "Sesja wygasła lub brak dostępu.";
+                    alert("Błąd: " + msg);
+                    if (xhr.status === 401 || xhr.status === 302) {
+                        window.location.href = "/login"; // automatyczne przejście na login
+                    }
+                }
+            });
+        });
+
+    function openConsole(host) {
+        window.location.href = `ssh://${host}`;
+    }
+
+    function openWinbox(host) {
+        window.open(`http://${host}`, '_blank');
+    }
+
+    $("#change-password-btn").click(() => {
+        $("#change-password-modal").show();
+    });
+
+    function closeChangePasswordModal() {
+        $("#change-password-modal").hide();
+        $("#change-password-msg").html("");
+        $("#change-password-form")[0].reset();
+    }
+
+    $("#change-password-form").submit(function(e) {
+        e.preventDefault();
+        const current = $("#current_password").val();
+        const newpass = $("#new_password").val();
+
+        $.ajax({
+            url: "/change_password",
+            type: "POST",
+            contentType: "application/json",
+            data: JSON.stringify({ current_password: current, new_password: newpass }),
+            success: function(response) {
+                $("#change-password-msg").html(`<span style="color:green">${response.message}</span>`);
+                setTimeout(closeChangePasswordModal, 2000);
+            },
+            error: function(xhr) {
+                $("#change-password-msg").html(`<span style="color:red">${xhr.responseJSON.message}</span>`);
+            }
+        });
+    });
+
+    function deleteMikrotik(id) {
+            if (confirm("Czy na pewno chcesz usunąć ten MikroTik?")) {
+                $.ajax({
+                    url: `/delete_mikrotik/${id}`,
+                    type: "DELETE",
+                    xhrFields: {
+                    withCredentials: true   
+                    },
+                    success: function(data) {
+                        alert(data.message);
+                        loadMikrotiks();
+                    },
+                    error: function(xhr) {
+                        alert("Błąd: " + xhr.responseJSON.message);
+                    }
+                });
+            }
+        }
+
+        function closeModal() { $("#add-modal").hide(); }
+        $("#open-add-modal").click(() => $("#add-modal").show());
+        $(".close").click(closeModal);
+
+        $("#logout").click(() => { window.location.href = ""; });
+
+
+        function executeCommand() {
+            const command = $("#command-input").val();
+            const selectedMikrotiks = $(".mikrotik-checkbox:checked").map(function() {
+                return $(this).val();
+            }).get();
+
+            if (!command || selectedMikrotiks.length === 0) {
+                alert("Wpisz polecenie i wybierz MikroTiki!");
+                return;
+            }
+
+            $.ajax({
+                url: "/execute_command",
+                type: "POST",
+                contentType: "application/json",
+                data: JSON.stringify({ command: command, mikrotik_ids: selectedMikrotiks }),
+                xhrFields: {
+                    withCredentials: true   
+                },
+                success: function(response) {
+                    if (response.success) {
+                        displayResults(response.results);
+                    } else {
+                        alert("Błąd: " + response.message);
+                    }
+                },
+                error: function(xhr) {
+                    alert("Błąd: " + xhr.responseJSON.message);
+                }
+            });
+        }
+
+        function displayResults(results) {
+        for (const mikrotikName in results) {
+            const mikrotikResponse = results[mikrotikName];
+
+            // Konwersja odpowiedź na zwykły tekst
+            let plainText = "";
+
+            if (Array.isArray(mikrotikResponse)) {
+                mikrotikResponse.forEach((item) => {
+                    if (Array.isArray(item)) {
+                        item.forEach(obj => {
+                            plainText += Object.entries(obj)
+                                .map(([k, v]) => `${k}=${v}`)
+                                .join(" ") + "\n";
+                        });
+                    } else if (typeof item === "object") {
+                        plainText += Object.entries(item)
+                            .map(([k, v]) => `${k}=${v}`)
+                            .join(" ") + "\n";
+                    } else {
+                        plainText += item + "\n";
+                    }
+                });
+            } else if (typeof mikrotikResponse === "object") {
+                plainText = Object.entries(mikrotikResponse)
+                    .map(([k, v]) => `${k}=${v}`)
+                    .join(" ");
+            } else {
+                plainText = mikrotikResponse;
+            }
+
+            // osobne okno dla każdego mikrotika
+            const deviceWindow = window.open("", mikrotikName, "width=600,height=400");
+            if (!deviceWindow) {
+                alert("Nie można otworzyć nowego okna. Sprawdź ustawienia przeglądarki.");
+                return;
+            }
+
+            // Podstawowy HTML + CSS
+            deviceWindow.document.write(`
+                <html>
+                <head>
+                    <title>Odpowiedź z: ${mikrotikName}</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; padding: 10px; }
+                        pre  { white-space: pre-wrap; word-wrap: break-word; }
+                    </style>
+                </head>
+                <body>
+                    <h2>Wyniki z urządzenia: ${mikrotikName}</h2>
+                    <pre>${plainText}</pre>
+                    <button onclick="window.close()">Zamknij</button>
+                </body>
+                </html>
+            `);
+            deviceWindow.document.close();
+        }
+    }
+
+        function openCommandModal() { $("#command-modal").show(); }
+        function closeCommandModal() { $("#command-modal").hide(); }
+        function closeResultsModal() { $("#results-modal").hide(); }
+
+        $("#open-command-modal").click(openCommandModal);
+        $("#logout").click(() => { window.location.href = "/logout"; });
+
+        setInterval(loadMikrotiks, 5000);
+        loadMikrotiks();
+
+    
+    </script>
+    <script src="/static/js/dark-mode.js"></script>
+</body>
+</html>

@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rejestracja</title>
+    <link rel="stylesheet" href="/static/css/auth.css">
+</head>
+<body>
+    <div class="auth-container">
+        <h2>Rejestracja</h2>
+
+        <!-- Komunikaty flash (np. błędy) -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="flash-messages flash-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <form method="POST" class="auth-form">
+            <label for="username">Nazwa użytkownika</label>
+            <input type="text" id="username" name="username" placeholder="Wpisz swoją nazwę" required>
+
+            <label for="email">Adres e-mail</label>
+            <input type="email" id="email" name="email" placeholder="Wpisz swój e-mail" required>
+
+            <label for="password">Hasło</label>
+            <div class="password-container">
+                <input type="password" id="password" name="password" placeholder="Wpisz hasło" required>
+                <button type="button" class="toggle-password" onclick="togglePassword('password')">👁</button>
+            </div>
+
+            <button type="submit">Zarejestruj</button>
+
+            <div class="auth-links">
+                <p>Masz już konto? <a href="{{ url_for('login') }}">Zaloguj się</a></p>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        function togglePassword(inputId) {
+            const input = document.getElementById(inputId);
+            input.type = input.type === "password" ? "text" : "password";
+        }
+    </script>
+</body>
+</html>
