@@ -150,7 +150,7 @@ Sprawdź czy localhost, port i dane są poprawne.
     • Wpisz swój login i hasło  
     • Kliknij „Zaloguj”  
   **Jeżeli rejestracja jest wyłączona w kodzie (app.config['REGISTRATION_ENABLED'] = False), włączony jest tryb admina:**
-      Login: admin  
+      email do logowania: admin@example.com  
       Hasło: admin  
       Hasło można zmienić po zalogowaniu  
 ### 2. Jak dodać router MikroTik?  
